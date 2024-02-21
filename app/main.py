@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.params import Body
 from fastapi import Response,HTTPException,status,Depends
 
-from typing import Optional
+from typing import Optional,List
 from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor 
@@ -52,7 +52,7 @@ def find_post_index(id):
 async def root():
     return {f"hellow world: welcome to my api by vivek chaudahry"}
 
-@app.get("/posts")
+@app.get("/posts",response_model=List[schemans.Post])
 def get_posts_data(db:Session=Depends(get_db)):
     
     #executing a query to postgrace database
@@ -63,9 +63,9 @@ def get_posts_data(db:Session=Depends(get_db)):
     # post=cursor.fetchall()
     
     posts=db.query(models.Post).all()
-    return {"data":posts}
+    return posts
 
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post("/posts", status_code=status.HTTP_201_CREATED,response_model=schemans.Post)
 def create_post(new_post: schemans.PostCreate, db:Session=Depends(get_db)):
     
     # print(new_post.rating)
@@ -87,14 +87,14 @@ def create_post(new_post: schemans.PostCreate, db:Session=Depends(get_db)):
     db.commit()
     db.refresh(newPosts)
     
-    return {"data:":newPosts}
+    return newPosts
 
 
 # title- str and content- str 
 #if we want specific content from the user, we can use pydantic for it- to this we define a class 
 
 #requesst to get a specific post
-@app.get("/posts/{id}")
+@app.get("/posts/{id}",response_model=schemans.Post)
 def get_post(id:int, db:Session=Depends(get_db)):
     # cursor.execute(""" SELECT * FROM posts WHERE id=%s""" , (str(id),))
     # test_post=cursor.fetchone()
@@ -112,7 +112,7 @@ def get_post(id:int, db:Session=Depends(get_db)):
     if not test_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"the post with the id {id} is not found")
-    return {"post_details":test_post}
+    return test_post
 
 @app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
 def deleate_post(id:int, db:Session=Depends(get_db)):
@@ -137,7 +137,7 @@ def deleate_post(id:int, db:Session=Depends(get_db)):
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@app.put("/posts/{id}")
+@app.put("/posts/{id}",response_model=schemans.Post)
 def update_post(id:int,post:schemans.PostCreate, db:Session=Depends(get_db)):
     # print(post)
     # index=find_post_index(id)
@@ -158,9 +158,9 @@ def update_post(id:int,post:schemans.PostCreate, db:Session=Depends(get_db)):
                             detail=f"the post with the id {id} is not found")
     post_query.update(post.dict(),synchronize_session=False)
     db.commit()
-    return {"data":post_query.first()}
+    return post_query.first()
 
 @app.get('/sqlalchemy')
 def test_posts(db:Session=Depends(get_db)):
     posts=db.query(models.Post).all()
-    return {"data":posts}
+    return posts
