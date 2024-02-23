@@ -7,7 +7,7 @@ from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor 
 import time
-from .routers import post,user
+from .routers import post,user,auth
 
 
 
@@ -22,6 +22,9 @@ models.Base.metadata.create_all(bind=engine)
 
 app=FastAPI()
 
+app.include_router(post.router)
+app.include_router(user.router)
+app.include_router(auth.router)
 
     
 #connecting to postgrace database
@@ -56,8 +59,6 @@ async def root():
     return {f"hellow world: welcome to my api by vivek chaudahry"}
 
 
-app.include_router(post.router)
-app.include_router(user.router)
 
 @app.get('/sqlalchemy')
 def test_posts(db:Session=Depends(get_db)):

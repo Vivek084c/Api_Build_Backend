@@ -2,6 +2,7 @@ from .. import models,schemans,utils
 from fastapi import Response,HTTPException,status,Depends,APIRouter
 from sqlalchemy.orm import Session
 from ..database import engine,get_db
+from .. import oauth
 from typing import List
 
 router=APIRouter(
@@ -9,7 +10,7 @@ router=APIRouter(
 )
 
 @router.get("/",response_model=List[schemans.Post])
-def get_posts_data(db:Session=Depends(get_db)):
+def get_posts_data(db:Session=Depends(get_db), user_id:int=Depends(oauth.get_current_user)):
     
     #executing a query to postgrace database
     # print(post)
@@ -21,8 +22,10 @@ def get_posts_data(db:Session=Depends(get_db)):
     posts=db.query(models.Post).all()
     return posts
 
+
+#if we want users to access certain end point then need to be loggend in and this is verified using the accesss token they provde 
 @router.post("/", status_code=status.HTTP_201_CREATED,response_model=schemans.Post)
-def create_post(new_post: schemans.PostCreate, db:Session=Depends(get_db)):
+def create_post(new_post: schemans.PostCreate, db:Session=Depends(get_db), user_id:int=Depends(oauth.get_current_user)):
     
     # print(new_post.rating)
     # post_dict=new_post.dict()
@@ -38,6 +41,7 @@ def create_post(new_post: schemans.PostCreate, db:Session=Depends(get_db)):
    
     # newPosts=models.Post(title=new_post.title, content=new_post.contents, published=new_post.published)
     #OR
+    print(user_id)
     newPosts=models.Post(**new_post.dict())
     db.add(newPosts)
     db.commit()
@@ -51,7 +55,7 @@ def create_post(new_post: schemans.PostCreate, db:Session=Depends(get_db)):
 
 #requesst to get a specific post
 @router.get("/{id}",response_model=schemans.Post)
-def get_post(id:int, db:Session=Depends(get_db)):
+def get_post(id:int, db:Session=Depends(get_db), user_id:int=Depends(oauth.get_current_user)):
     # cursor.execute(""" SELECT * FROM posts WHERE id=%s""" , (str(id),))
     # test_post=cursor.fetchone()
     
@@ -71,7 +75,7 @@ def get_post(id:int, db:Session=Depends(get_db)):
     return test_post
 
 @router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def deleate_post(id:int, db:Session=Depends(get_db)):
+def deleate_post(id:int, db:Session=Depends(get_db), user_id:int=Depends(oauth.get_current_user)):
     #deleating the post 
     # index=find_post_index(id)
     # my_post.pop(deleated_post)
@@ -94,7 +98,7 @@ def deleate_post(id:int, db:Session=Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.put("/{id}",response_model=schemans.Post)
-def update_post(id:int,post:schemans.PostCreate, db:Session=Depends(get_db)):
+def update_post(id:int,post:schemans.PostCreate, db:Session=Depends(get_db), user_id:int=Depends(oauth.get_current_user)):
     # print(post)
     # index=find_post_index(id)
     # post_dict=post.dict()
@@ -115,3 +119,7 @@ def update_post(id:int,post:schemans.PostCreate, db:Session=Depends(get_db)):
     post_query.update(post.dict(),synchronize_session=False)
     db.commit()
     return post_query.first()
+
+
+
+# get_current_user:int=Depends(oauth.get_current_user)
