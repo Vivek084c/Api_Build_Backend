@@ -1,8 +1,9 @@
 from jose import JWTError,jwt
 from datetime import datetime,timedelta
-from . import schemans
+from . import schemans,database,models
 from fastapi import Depends,status,HTTPException
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
 
 oauth2_schema=OAuth2PasswordBearer(tokenUrl='login')
 
@@ -14,7 +15,7 @@ oauth2_schema=OAuth2PasswordBearer(tokenUrl='login')
 
 SECRET_KEY="sdgasdg83223asdfa9sdg3dsga1231ddgds"
 ALGORITHM="HS256"
-ACCESS_TOKEN_EXPIRE_MINUITES=30
+ACCESS_TOKEN_EXPIRE_MINUITES=60
 
 def create_access_token(data:dict):
     encode=data.copy()
@@ -38,10 +39,11 @@ def verify_access_token(token:str,credentials_exceptions):
         raise credentials_exceptions
     return token_data
 
-def get_current_user(token:str=Depends(oauth2_schema)):
+def get_current_user(token:str=Depends(oauth2_schema), db:Session=Depends(database.get_db) ):
     credentials_exceptions=HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail=f"could not validate the credentails ",headers={"WWW-  Authenticate":"Bearer"})
-
-    return verify_access_token(token,credentials_exceptions)
+    token=verify_access_token(token,credentials_exceptions)
+    user=db.query(models.User).filter(models.User.id==token.id).first()
+    return user 
     
     
     
