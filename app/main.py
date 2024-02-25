@@ -2,15 +2,17 @@ from fastapi import FastAPI
 from fastapi import Depends
 from typing import List
 from random import randrange
-from .routers import post,user,auth
+from .routers import post,user,auth, vote
 from .config import settings
 
-# #builing the model
-# from sqlalchemy.orm import Session
-# from . import models
-# from .database import engine,get_db
-# models.Base.metadata.create_all(bind=engine)
-#  #setting the dependencies
+#builing the model
+import psycopg2
+import time
+from sqlalchemy.orm import Session
+from . import models
+from .database import engine,get_db
+models.Base.metadata.create_all(bind=engine)
+ #setting the dependencies
 
 
 
@@ -19,18 +21,18 @@ app=FastAPI()
 app.include_router(post.router)
 app.include_router(user.router)
 app.include_router(auth.router)
+app.include_router(vote.router)
 
-    
-# #connecting to postgrace database
-# while True:
-#     try:
-#         conn=psycopg2.connect(host="localhost",database="FastApi",user='postgres',password='vivek123',cursor_factory=RealDictCursor)
-#         cursor=conn.cursor()
-#         print("Database connection established")
-#         break
-#     except Exception as error:
-#         print(f"the connection to database failed error: {error}")
-#         time.sleep(2)
+#connecting to postgrace database
+while True:
+    try:
+        conn=psycopg2.connect(host="localhost",database="FastApi",user='postgres',password='vivek123')
+        cursor=conn.cursor()
+        print("Database connection established")
+        break
+    except Exception as error:
+        print(f"the connection to database failed error: {error}")
+        time.sleep(2)
         
 # #list to handel dataset in memory
 # my_post=[
