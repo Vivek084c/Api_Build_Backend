@@ -9,6 +9,24 @@ router=APIRouter(
     prefix="/posts",tags=["posts"]
 )
 
+
+# @router.get("/",response_model=List[schemans.PostOut])
+# def get_posts_data(db:Session=Depends(get_db), current_user:int=Depends(oauth.get_current_user),limit:int=10,skip:int=0,search:Optional[str]=""):
+    
+#     #executing a query to postgrace database
+#     # print(post)
+#     # return {"data":my_post}
+    
+#     # cursor.execute(""" SELECT * FROM posts""")
+#     # post=cursor.fetchall()
+#     print(limit)
+#     posts=db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+#     results=db.query(models.Post,func.count(models.Vote.post_id).label("Votes")).join(models.Vote,models.Vote.post_id==models.Post.id,isouter=True).group_by(models.Post.id).all()
+#     print(db.query(models.Post,func.count(models.Vote.post_id).label("Votes")).join(models.Vote,models.Vote.post_id==models.Post.id,isouter=True).group_by(models.Post.id))
+    
+#     return results
+
+
 @router.get("/",response_model=List[schemans.Post])
 def get_posts_data(db:Session=Depends(get_db), current_user:int=Depends(oauth.get_current_user),limit:int=10,skip:int=0,search:Optional[str]=""):
     

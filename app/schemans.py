@@ -53,6 +53,12 @@ class Post(PostBase):
     owner:UserOut
     class Config:
         orm_mode=True
+        
+class PostOut(PostBase):
+    Post:Post
+    votes:int
+    class Config:
+        orm_mode=True
     
 #schemans for handling users
 class UserCreate(BaseModel):
